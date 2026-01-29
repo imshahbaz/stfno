@@ -16,14 +16,16 @@ import (
 )
 
 func main() {
-	// Print Whitelist IP
+	// Fetch and store Whitelist IP
+	var whitelistedIP string
 	client := &http.Client{Timeout: 5 * time.Second}
 	resp, err := client.Get("https://api.ipify.org")
 	if err == nil {
 		defer resp.Body.Close()
 		ip, _ := io.ReadAll(resp.Body)
+		whitelistedIP = string(ip)
 		fmt.Printf("\n-----------------------------------------\n")
-		fmt.Printf("WHITELIST THIS IP: %s\n", string(ip))
+		fmt.Printf("WHITELIST THIS IP: %s\n", whitelistedIP)
 		fmt.Printf("-----------------------------------------\n\n")
 	}
 
@@ -43,15 +45,8 @@ func main() {
 	// Initialize Stoxkart Client
 	stoxClient := stoxkart.NewClient()
 
-	// Register Place Order endpoint
-	huma.Register(api, huma.Operation{
-		OperationID: "place-order",
-		Method:      http.MethodPost,
-		Path:        "/order/place",
-		Summary:     "Place a buy/sell order in FnO",
-		Description: "Places an order using Stoxkart Superr API",
-		Tags:        []string{"Orders"},
-	}, handlers.HandlePlaceOrder(stoxClient))
+	// Register all routes
+	handlers.RegisterRoutes(api, stoxClient, whitelistedIP)
 
 	// Start the server
 	router.Run(":8090")
