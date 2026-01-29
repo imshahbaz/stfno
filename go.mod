@@ -3,13 +3,14 @@ module shahbaz-trades-fno
 go 1.25.0
 
 require (
+	github.com/bytedance/sonic v1.15.0
 	github.com/danielgtaylor/huma/v2 v2.35.0
 	github.com/gin-gonic/gin v1.11.0
+	github.com/go-resty/resty/v2 v2.17.1
 )
 
 require (
 	github.com/bytedance/gopkg v0.1.3 // indirect
-	github.com/bytedance/sonic v1.15.0 // indirect
 	github.com/bytedance/sonic/loader v0.5.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.12 // indirect
