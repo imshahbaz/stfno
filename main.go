@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
+	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humagin"
@@ -18,6 +20,17 @@ type GreetingOutput struct {
 }
 
 func main() {
+
+	client := &http.Client{Timeout: 5 * time.Second}
+	resp, err := client.Get("https://api.ipify.org")
+	if err == nil {
+		defer resp.Body.Close()
+		ip, _ := io.ReadAll(resp.Body)
+		fmt.Printf("\n-----------------------------------------\n")
+		fmt.Printf("WHITELIST THIS IP: %s\n", string(ip))
+		fmt.Printf("-----------------------------------------\n\n")
+	}
+
 	// Create a new Gin router
 	router := gin.Default()
 
