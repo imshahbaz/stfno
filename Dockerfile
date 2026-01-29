@@ -18,4 +18,4 @@ EXPOSE 8090
 
 # Command to run the application using Uvicorn
 # We bind to 0.0.0.0 so Northflank can route external traffic to the container
-CMD ["uvicorn", "main:app", "--port", "8090"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8090"]
