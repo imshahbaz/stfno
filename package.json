@@ -1,0 +1,31 @@
+{
+    "name": "mstock-multiuser-backend",
+    "version": "1.0.0",
+    "description": "Multi-user trading API using m.Stock Type B SDK",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js",
+        "dev": "tsx server.js"
+    },
+    "keywords": [
+        "mstock",
+        "trading-api",
+        "algo-trading",
+        "node.js",
+        "totp"
+    ],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@mstock-mirae-asset/nodetradingapi-typeb": "^0.0.2",
+        "dotenv": "^17.2.3",
+        "express": "^5.2.1",
+        "lru-cache": "^11.2.5",
+        "otplib": "12.0.1",
+        "tsx": "^4.19.2"
+    },
+    "devDependencies": {
+        "nodemon": "^3.1.9",
+        "tsx": "^4.21.0"
+    }
+}
