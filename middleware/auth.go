@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/rs/zerolog/log"
 )
 
 var apiSecret string
@@ -14,12 +15,11 @@ func init() {
 	if apiSecret == "" {
 		apiSecret = "shahbaz-trades-secret"
 	}
+
 	authEnabledEnv := os.Getenv("AUTH_ENABLED")
-	if authEnabledEnv == "" {
-		authEnabled = true
-	} else {
-		authEnabled = authEnabledEnv == "true"
-	}
+	authEnabled = authEnabledEnv == "true"
+	log.Info().Bool("authEnabled", authEnabled).Msg("Auth enabled")
+
 }
 
 func AuthMiddleware() func(huma.Context, func(huma.Context)) {

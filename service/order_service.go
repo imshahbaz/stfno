@@ -23,8 +23,8 @@ func (s *OrderService) PlaceOrder(input models.OrderInput) (*models.APIResponse,
 		return nil, fmt.Errorf("session not found for user %s", input.Username)
 	}
 
-	userSvc := val.(*UserService)
-	if userSvc == nil {
+	userSvc, ok := val.(*UserService)
+	if !ok || userSvc == nil {
 		return nil, fmt.Errorf("user service not found for user %s", input.Username)
 	}
 
@@ -54,31 +54,37 @@ func (s *OrderService) PlaceOrder(input models.OrderInput) (*models.APIResponse,
 		return nil, err
 	}
 
-	var result map[string]any
-	if err := sonic.Unmarshal(resp.Body(), &result); err != nil {
-		log.Error().Err(err).Str("username", input.Username).Msg("Failed to unmarshal MStock order response")
-		return nil, err
-	}
-	log.Info().Str("username", input.Username).Str("symbol", input.Symbol).Str("side", input.Side).Msg("Order placement response received")
+	var finalResult map[string]any
+	rawBody := resp.Body()
 
-	// Check for MStock specific error status
-	if status, ok := result["status"].(string); ok && status == "error" {
-		msg, _ := result["message"].(string)
+	var sliceResult []map[string]any
+	if err := sonic.Unmarshal(rawBody, &sliceResult); err == nil && len(sliceResult) > 0 {
+		finalResult = sliceResult[0]
+	} else {
+		if err := sonic.Unmarshal(rawBody, &finalResult); err != nil {
+			log.Error().Err(err).Str("username", input.Username).Msg("Failed to unmarshal MStock response")
+			return nil, err
+		}
+	}
+
+	log.Info().Str("username", input.Username).Str("symbol", input.Symbol).Msg("Order response received")
+
+	if status, ok := finalResult["status"].(string); ok && status == "error" {
+		msg, _ := finalResult["message"].(string)
 		if msg == "" {
 			msg = "Order placement failed."
 		}
-		// Include error_type in the data if available
-		log.Warn().Str("username", input.Username).Str("symbol", input.Symbol).Interface("error", result).Msg("Order placement failed by MStock")
+
+		log.Warn().Str("username", input.Username).Str("symbol", input.Symbol).Str("broker_msg", msg).Msg("Order rejected by RMS")
+
 		return &models.APIResponse{
 			Status:  "error",
 			Message: msg,
-			Data:    result,
+			Data:    finalResult,
 		}, nil
 	}
 
-	// For success, return the data part directly
-	orderData := result["data"]
-	log.Info().Str("username", input.Username).Str("symbol", input.Symbol).Interface("orderData", orderData).Msg("Order placed successfully")
+	orderData := finalResult["data"]
 	return &models.APIResponse{
 		Status:  "success",
 		Message: "Order placed successfully",
