@@ -1,6 +1,10 @@
 package utils
 
-import "time"
+import (
+	"time"
+
+	"github.com/rs/zerolog/log"
+)
 
 var (
 	ISTLocation *time.Location
@@ -10,7 +14,8 @@ func init() {
 	var err error
 	ISTLocation, err = time.LoadLocation("Asia/Kolkata")
 	if err != nil {
-		panic(err)
+		ISTLocation = time.FixedZone("IST", 5.5*60*60)
+		log.Info().Any("time", time.Now().In(ISTLocation)).Msg("Using fixed zone for IST")
 	}
 }
 
