@@ -1,0 +1,49 @@
+# --- Binaries & Executables ---
+bin/
+# Common Go binary names
+main
+main.exe
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# --- Environment & Secrets ---
+.env
+.env.local
+.env.*.local
+# m.Stock credentials or session files
+*.session
+# If you store logs locally
+logs/
+*.log
+
+# --- Go Dependencies & Tooling ---
+# Vendor directory (only ignore if you don't want to check in dependencies)
+vendor/
+# Go coverage and testing
+*.out
+*.test
+prof/
+
+# --- IDEs & Editors ---
+.vscode/
+# Keep launch.json if you want to share debug configs, otherwise ignore:
+# .vscode/launch.json
+.idea/
+*.swp
+*.swo
+
+# --- Live Reloading (Air) ---
+# If you use air for development
+tmp/
+
+# --- Huma / OpenAPI / Swagger ---
+# If you generate static docs or assets
+# docs/swagger.json
+# docs/swagger.yaml
+
+# --- OS Specific ---
+.DS_Store
+Thumbs.db
