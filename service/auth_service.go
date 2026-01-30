@@ -9,6 +9,7 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/go-resty/resty/v2"
+	"github.com/rs/zerolog/log"
 )
 
 type AuthService struct {
@@ -26,6 +27,9 @@ func NewAuthService() *AuthService {
 	resp, err := client.R().Get("https://api.ipify.org")
 	if err == nil {
 		s.publicIP = string(resp.Body())
+		log.Info().Str("ip", s.publicIP).Msg("AuthService initialized with public IP")
+	} else {
+		log.Error().Err(err).Msg("Failed to fetch public IP during AuthService initialization")
 	}
 	return s
 }
@@ -41,6 +45,7 @@ func (s *AuthService) Login(input models.LoginInput) (*models.APIResponse, error
 		Post("https://api.mstock.trade/openapi/typea/connect/login")
 
 	if err != nil {
+		log.Error().Err(err).Str("username", input.Username).Msg("MStock login connection failed")
 		return nil, err
 	}
 
@@ -52,6 +57,7 @@ func (s *AuthService) Login(input models.LoginInput) (*models.APIResponse, error
 		cache.PendingLoginCache.Set(input.Username, input.APIKey, 5*time.Minute)
 		s.mu.Unlock()
 
+		log.Info().Str("username", input.Username).Msg("MStock login initiated (Step 1 success)")
 		return &models.APIResponse{
 			Status:  "success",
 			Message: "OTP sent. Please verify with OTP and Username.",
@@ -62,6 +68,7 @@ func (s *AuthService) Login(input models.LoginInput) (*models.APIResponse, error
 	if msg == "" {
 		msg = "m.Stock login failed without a specific reason."
 	}
+	log.Warn().Str("username", input.Username).Str("reason", msg).Msg("MStock login failed")
 
 	return &models.APIResponse{Status: "error", Message: msg}, nil
 }
@@ -83,6 +90,7 @@ func (s *AuthService) Verify(input models.VerifyInput) (*models.APIResponse, err
 		Post("https://api.mstock.trade/openapi/typea/session/token")
 
 	if err != nil {
+		log.Error().Err(err).Str("username", input.Username).Msg("MStock verification connection failed")
 		return nil, err
 	}
 
@@ -97,6 +105,7 @@ func (s *AuthService) Verify(input models.VerifyInput) (*models.APIResponse, err
 		cache.SessionCache.Set(input.Username, userSvc, utils.GetDurationToMidnightIST())
 		s.mu.Unlock()
 
+		log.Info().Str("username", input.Username).Msg("MStock session established successfully")
 		return &models.APIResponse{
 			Status:  "success",
 			Message: "Session established successfully",
@@ -107,6 +116,7 @@ func (s *AuthService) Verify(input models.VerifyInput) (*models.APIResponse, err
 	if msg == "" {
 		msg = "OTP verification failed."
 	}
+	log.Warn().Str("username", input.Username).Str("reason", msg).Msg("MStock verification failed")
 	return &models.APIResponse{Status: "error", Message: msg}, nil
 }
 

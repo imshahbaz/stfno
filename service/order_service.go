@@ -7,6 +7,7 @@ import (
 	"shahbaztradesfno/models"
 
 	"github.com/bytedance/sonic"
+	"github.com/rs/zerolog/log"
 )
 
 type OrderService struct {
@@ -49,13 +50,16 @@ func (s *OrderService) PlaceOrder(input models.OrderInput) (*models.APIResponse,
 		Post("https://api.mstock.trade/openapi/typea/orders/" + variety)
 
 	if err != nil {
+		log.Error().Err(err).Str("username", input.Username).Str("symbol", input.Symbol).Msg("MStock order placement connection failed")
 		return nil, err
 	}
 
 	var result map[string]any
 	if err := sonic.Unmarshal(resp.Body(), &result); err != nil {
+		log.Error().Err(err).Str("username", input.Username).Msg("Failed to unmarshal MStock order response")
 		return nil, err
 	}
+	log.Info().Str("username", input.Username).Str("symbol", input.Symbol).Str("side", input.Side).Msg("Order placement response received")
 
 	// Check for MStock specific error status
 	if status, ok := result["status"].(string); ok && status == "error" {
@@ -64,6 +68,7 @@ func (s *OrderService) PlaceOrder(input models.OrderInput) (*models.APIResponse,
 			msg = "Order placement failed."
 		}
 		// Include error_type in the data if available
+		log.Warn().Str("username", input.Username).Str("symbol", input.Symbol).Interface("error", result).Msg("Order placement failed by MStock")
 		return &models.APIResponse{
 			Status:  "error",
 			Message: msg,
@@ -73,6 +78,7 @@ func (s *OrderService) PlaceOrder(input models.OrderInput) (*models.APIResponse,
 
 	// For success, return the data part directly
 	orderData := result["data"]
+	log.Info().Str("username", input.Username).Str("symbol", input.Symbol).Interface("orderData", orderData).Msg("Order placed successfully")
 	return &models.APIResponse{
 		Status:  "success",
 		Message: "Order placed successfully",
